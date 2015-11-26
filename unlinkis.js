@@ -5,6 +5,7 @@
 // @version     0.1
 // @require     https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js
 // @grant       GM_xmlhttpRequest
+// @license     GPLv3 or later
 // ==/UserScript==
 
 //Caution: This parsing method is not code-change resist.
