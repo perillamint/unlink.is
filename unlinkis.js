@@ -72,7 +72,7 @@ function convert_and_patch(url, jqobj, depth) {
 }
 
 function tweet_handler(tweet) {
-  var links = $(tweet).find('a');
+  var links = $(tweet).find('a.twitter-timeline-link');
 
   for (var i = 0; i < links.length; i++) {
     var match = $(links[i]).text().match(linkis_detect);
@@ -95,7 +95,8 @@ function get_tweets() {
 
 var obs_config = {
   childList: true,
-  characterData: true
+  characterData: true,
+  subtree: true
 };
 
 var observer = new MutationObserver(function(mutations) {
@@ -107,7 +108,7 @@ var observer = new MutationObserver(function(mutations) {
   });
 });
 
-observer.observe($('#stream-items-id')[0], obs_config);
+observer.observe($('#doc')[0], obs_config);
 get_tweets();
 
 console.log('Unlink.is ready!');
