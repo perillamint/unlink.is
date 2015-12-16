@@ -23,8 +23,7 @@ var tco_url_detect = /http(|s):\/\/t.co\/[^\/]*$/;
 
 function get_jsblock(str) {
   var match = str.match(jsblock_regex);
-  var ret = [
-  ];
+  var ret = [];
   for (var i = 1; i < match.length; i++) {
     ret[i - 1] = match[i];
   }
@@ -42,20 +41,20 @@ function extract_url(str) {
 }
 
 function convert_and_patch(url, jqobj, depth) {
-  if(depth > 100) return;
-  
-  console.log("Resolving url: " + url);
+  if (depth > 100) return;
+
+  console.log('Resolving url: ' + url);
 
   GM_xmlhttpRequest({
     method: 'GET',
     url: url,
-    onload: function (resp) {
+    onload: function(resp) {
       //Check xmlhttpRequest ends with t.co
-      if(resp.finalUrl.match(tco_url_detect) !== null) {
+      if (resp.finalUrl.match(tco_url_detect) !== null) {
         var url_arr = resp.response.match(tco_url_extract_regex);
-        if(url_arr === null) return;
+        if (url_arr === null) return;
 
-        convert_and_patch(url_arr[1].replace(/\\\//g, "/"), jqobj, depth);
+        convert_and_patch(url_arr[1].replace(/\\\//g, '/'), jqobj, depth);
       }
       var jsblock_arr = get_jsblock(resp.response);
       var url = null;
@@ -63,29 +62,29 @@ function convert_and_patch(url, jqobj, depth) {
         url = extract_url(jsblock_arr[i]);
         if (url !== null) break;
       }
-      jqobj.attr("href", url);
+      jqobj.attr('href', url);
       jqobj.text(url);
     },
-    onerror: function (err) {
+    onerror: function(err) {
       console.log(err);
     }
   });
 }
 
 function tweet_handler(tweet) {
-  var links = $(tweet).find("a");
+  var links = $(tweet).find('a');
 
-  for(var i = 0; i < links.length; i++) {
+  for (var i = 0; i < links.length; i++) {
     var match = $(links[i]).text().match(linkis_detect);
 
-    if(match !== null) {
+    if (match !== null) {
       convert_and_patch(links[i].href, $(links[i]), 0);
     }
   }
 }
 
 function get_tweets() {
-  var matches = $('li').filter(function () {
+  var matches = $('li').filter(function() {
     return this.id.match(/stream-item-tweet-*/);
   });
 
@@ -99,16 +98,16 @@ var obs_config = {
   characterData: true
 };
 
-var observer = new MutationObserver(function (mutations) {
-  mutations.forEach(function (mutation) {
+var observer = new MutationObserver(function(mutations) {
+  mutations.forEach(function(mutation) {
     var added_nodes = mutation.addedNodes;
     for (var i = 0; i < added_nodes.length; i++) {
       tweet_handler(added_nodes[i]);
     }
-  })
+  });
 });
 
-observer.observe($('#stream-items-id') [0], obs_config);
+observer.observe($('#stream-items-id')[0], obs_config);
 get_tweets();
 
-console.log("Unlink.is ready!");
+console.log('Unlink.is ready!');
