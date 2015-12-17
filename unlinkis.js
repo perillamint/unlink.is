@@ -15,7 +15,7 @@ var jsblock_regex = /<script[^>]*>[\s\S]([.\s\S]*?)<\/script>/g;
 var urlgrabber_regex = /longUrl:[ ]*"(.+?)"/;
 var linkdata_obj_regex = /var LinkData/;
 
-var linkis_detect = /ln\.is/;
+var linkis_detect = /(?:ln\.is|linkis\.com)\/\w+/;
 var card_iframe_regex = /xdm_default\d+?_provider/;
 
 //Caution: This url extractor WILL CRASH when twitter changes working method of t.co
