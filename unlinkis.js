@@ -66,7 +66,7 @@ function convert_and_patch(url, jqobj, depth) {
       jqobj.attr('href', url);
       // Check `jqobj` is normal link or tweet card
       if (jqobj.hasClass('twitter-timeline-link')) {
-        jqobj.text(url);
+        jqobj.text(url).attr('title', url);
       } else if (jqobj.hasClass('TwitterCard-container')) {
         jqobj.find('span.SummaryCard-destination').text(jqobj[0].hostname);
       }
