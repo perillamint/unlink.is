@@ -54,7 +54,7 @@ function convert_and_patch(url, jqobj, depth) {
         var url_arr = resp.response.match(tco_url_extract_regex);
         if (url_arr === null) return;
 
-        convert_and_patch(url_arr[1].replace(/\\\//g, '/'), jqobj, depth);
+        convert_and_patch(url_arr[1].replace(/\\\//g, '/'), jqobj, depth + 1);
       }
       var jsblock_arr = get_jsblock(resp.response);
       var url = null;
