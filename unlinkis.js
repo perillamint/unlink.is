@@ -16,6 +16,7 @@ var urlgrabber_regex = /longUrl:[ ]*"(.+?)"/;
 var linkdata_obj_regex = /var LinkData/;
 
 var linkis_detect = /ln\.is/;
+var card_iframe_regex = /xdm_default\d+?_provider/;
 
 //Caution: This url extractor WILL CRASH when twitter changes working method of t.co
 var tco_url_extract_regex = /location\.replace\("(.*?)"\)/;
@@ -63,7 +64,12 @@ function convert_and_patch(url, jqobj, depth) {
         if (url !== null) break;
       }
       jqobj.attr('href', url);
-      jqobj.text(url);
+      // Check `jqobj` is normal link or tweet card
+      if (jqobj.hasClass('twitter-timeline-link')) {
+        jqobj.text(url);
+      } else if (jqobj.hasClass('TwitterCard-container')) {
+        jqobj.find('span.SummaryCard-destination').text(jqobj[0].hostname);
+      }
     },
     onerror: function(err) {
       console.log(err);
@@ -71,14 +77,20 @@ function convert_and_patch(url, jqobj, depth) {
   });
 }
 
-function tweet_handler(tweet) {
-  var links = $(tweet).find('a.twitter-timeline-link');
+function tweet_handler(elem) {
+  if (elem.tagName == 'IFRAME' && card_iframe_regex.test(elem.id)) {
+    $(elem).on('load', function (event) {
+      var link = elem.contentWindow.document.querySelector('a.js-openLink');
+      convert_and_patch(link.href, $(link), 0);
+    });
+  } else {
+    var links = $(elem).find('a.twitter-timeline-link');
+    for (var i = 0; i < links.length; i++) {
+      var match = $(links[i]).text().match(linkis_detect);
 
-  for (var i = 0; i < links.length; i++) {
-    var match = $(links[i]).text().match(linkis_detect);
-
-    if (match !== null) {
-      convert_and_patch(links[i].href, $(links[i]), 0);
+      if (match !== null) {
+        convert_and_patch(links[i].href, $(links[i]), 0);
+      }
     }
   }
 }
