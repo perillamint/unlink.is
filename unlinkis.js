@@ -15,7 +15,8 @@ var jsblock_regex = /<script[^>]*>[\s\S]([.\s\S]*?)<\/script>/g;
 var urlgrabber_regex = /longUrl:[ ]*"(.+?)"/;
 var linkdata_obj_regex = /var LinkData/;
 
-var linkis_detect = /ln\.is/;
+var linkis_detect = /(?:ln\.is|linkis\.com)\/\w+/;
+var card_iframe_regex = /xdm_default\d+?_provider/;
 
 //Caution: This url extractor WILL CRASH when twitter changes working method of t.co
 var tco_url_extract_regex = /location\.replace\("(.*?)"\)/;
@@ -23,8 +24,7 @@ var tco_url_detect = /http(|s):\/\/t.co\/[^\/]*$/;
 
 function get_jsblock(str) {
   var match = str.match(jsblock_regex);
-  var ret = [
-  ];
+  var ret = [];
   for (var i = 1; i < match.length; i++) {
     ret[i - 1] = match[i];
   }
@@ -42,20 +42,20 @@ function extract_url(str) {
 }
 
 function convert_and_patch(url, jqobj, depth) {
-  if(depth > 100) return;
-  
-  console.log("Resolving url: " + url);
+  if (depth > 100) return;
+
+  console.log('Resolving url: ' + url);
 
   GM_xmlhttpRequest({
     method: 'GET',
     url: url,
-    onload: function (resp) {
+    onload: function(resp) {
       //Check xmlhttpRequest ends with t.co
-      if(resp.finalUrl.match(tco_url_detect) !== null) {
+      if (resp.finalUrl.match(tco_url_detect) !== null) {
         var url_arr = resp.response.match(tco_url_extract_regex);
-        if(url_arr === null) return;
+        if (url_arr === null) return;
 
-        convert_and_patch(url_arr[1].replace(/\\\//g, "/"), jqobj, depth);
+        convert_and_patch(url_arr[1].replace(/\\\//g, '/'), jqobj, depth + 1);
       }
       var jsblock_arr = get_jsblock(resp.response);
       var url = null;
@@ -63,29 +63,40 @@ function convert_and_patch(url, jqobj, depth) {
         url = extract_url(jsblock_arr[i]);
         if (url !== null) break;
       }
-      jqobj.attr("href", url);
-      jqobj.text(url);
+      jqobj.attr('href', url);
+      // Check `jqobj` is normal link or tweet card
+      if (jqobj.hasClass('twitter-timeline-link')) {
+        jqobj.text(url).attr('title', url);
+      } else if (jqobj.hasClass('TwitterCard-container')) {
+        jqobj.find('span.SummaryCard-destination').text(jqobj[0].hostname);
+      }
     },
-    onerror: function (err) {
+    onerror: function(err) {
       console.log(err);
     }
   });
 }
 
-function tweet_handler(tweet) {
-  var links = $(tweet).find("a");
+function tweet_handler(elem) {
+  if (elem.tagName == 'IFRAME' && card_iframe_regex.test(elem.id)) {
+    $(elem).on('load', function (event) {
+      var link = elem.contentWindow.document.querySelector('a.js-openLink');
+      convert_and_patch(link.href, $(link), 0);
+    });
+  } else {
+    var links = $(elem).find('a.twitter-timeline-link');
+    for (var i = 0; i < links.length; i++) {
+      var match = $(links[i]).text().match(linkis_detect);
 
-  for(var i = 0; i < links.length; i++) {
-    var match = $(links[i]).text().match(linkis_detect);
-
-    if(match !== null) {
-      convert_and_patch(links[i].href, $(links[i]), 0);
+      if (match !== null) {
+        convert_and_patch(links[i].href, $(links[i]), 0);
+      }
     }
   }
 }
 
 function get_tweets() {
-  var matches = $('li').filter(function () {
+  var matches = $('li').filter(function() {
     return this.id.match(/stream-item-tweet-*/);
   });
 
@@ -96,19 +107,20 @@ function get_tweets() {
 
 var obs_config = {
   childList: true,
-  characterData: true
+  characterData: true,
+  subtree: true
 };
 
-var observer = new MutationObserver(function (mutations) {
-  mutations.forEach(function (mutation) {
+var observer = new MutationObserver(function(mutations) {
+  mutations.forEach(function(mutation) {
     var added_nodes = mutation.addedNodes;
     for (var i = 0; i < added_nodes.length; i++) {
       tweet_handler(added_nodes[i]);
     }
-  })
+  });
 });
 
-observer.observe($('#stream-items-id') [0], obs_config);
+observer.observe($('#doc')[0], obs_config);
 get_tweets();
 
-console.log("Unlink.is ready!");
+console.log('Unlink.is ready!');
