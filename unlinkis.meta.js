@@ -4,7 +4,7 @@
 // @include     https://twitter.com/*
 // @version     0.2
 // @require     https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js
-// @downloadURL https://raw.githubusercontent.com/perillamint/unlink.is/master/unlinkis.js
+// @downloadURL https://raw.githubusercontent.com/perillamint/unlink.is/master/unlinkis.user.js
 // @updateURL   https://raw.githubusercontent.com/perillamint/unlink.is/master/unlinkis.meta.js
 // @grant       GM_xmlhttpRequest
 // @license     GPLv3 or later
