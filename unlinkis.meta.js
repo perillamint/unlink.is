@@ -9,4 +9,7 @@
 // @updateURL   https://raw.githubusercontent.com/perillamint/unlink.is/master/unlinkis.meta.js
 // @grant       GM_xmlhttpRequest
 // @license     GPLv3 or later
+// @connect     t.co
+// @connect     ln.is
+// @connect     linkis.com
 // ==/UserScript==
