@@ -16,6 +16,7 @@ var urlgrabber_regex = /longUrl:[ ]*"(.+?)"/;
 var linkdata_obj_regex = /var LinkData/;
 
 var linkis_detect = /(?:ln\.is|linkis\.com)\/\w+/;
+var linkis_card_detect = /(?:ln\.is|linkis\.com)/;
 var card_iframe_regex = /xdm_default\d+?_provider/;
 
 //Caution: This url extractor WILL CRASH when twitter changes working method of t.co
@@ -80,8 +81,11 @@ function convert_and_patch(url, jqobj, depth) {
 function tweet_handler(elem) {
   if (elem.tagName == 'IFRAME' && card_iframe_regex.test(elem.id)) {
     $(elem).on('load', function (event) {
-      var link = elem.contentWindow.document.querySelector('a.js-openLink');
-      convert_and_patch(link.href, $(link), 0);
+      var card_hostname = elem.contentWindow.document.querySelector('span.SummaryCard-destination');
+      if (card_hostname !== null && linkis_card_detect.test(card_hostname.textContent)) {
+        var link = elem.contentWindow.document.querySelector('a.js-openLink');
+        convert_and_patch(link.href, $(link), 0);
+      }
     });
   } else {
     var links = $(elem).find('a.twitter-timeline-link');
