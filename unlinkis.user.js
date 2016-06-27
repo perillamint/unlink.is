@@ -2,6 +2,7 @@
 // @name        unlink.is
 // @namespace   http://gmscript.gentoo.moe
 // @include     https://twitter.com/*
+// @include     https://tweetdeck.twitter.com/*
 // @exclude     https://twitter.com/i/*
 // @version     0.2
 // @require     https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js
@@ -26,6 +27,8 @@ var card_iframe_regex = /xdm_default\d+?_provider/;
 //Caution: This url extractor WILL CRASH when twitter changes working method of t.co
 var tco_url_extract_regex = /location\.replace\("(.*?)"\)/;
 var tco_url_detect = /http(|s):\/\/t.co\/[^\/]*$/;
+
+var tweetdeck = location.hostname === 'tweetdeck.twitter.com';
 
 function get_jsblock(str) {
   var match = str.match(jsblock_regex);
@@ -70,7 +73,7 @@ function convert_and_patch(url, jqobj, depth) {
       }
       jqobj.attr('href', url);
       // Check `jqobj` is normal link or tweet card
-      if (jqobj.hasClass('twitter-timeline-link')) {
+      if (jqobj.hasClass('twitter-timeline-link') || jqobj.hasClass('url-ext')) {
         jqobj.text(url).attr('title', url);
       } else if (jqobj.hasClass('TwitterCard-container')) {
         jqobj.find('span.SummaryCard-destination').text(jqobj[0].hostname);
@@ -92,7 +95,11 @@ function tweet_handler(elem) {
       }
     });
   } else {
-    var links = $(elem).find('a.twitter-timeline-link');
+    if (tweetdeck) {
+      var links = $(elem).find('a.url-ext');
+    } else {
+      var links = $(elem).find('a.twitter-timeline-link');
+    }
     for (var i = 0; i < links.length; i++) {
       var match = $(links[i]).text().match(linkis_detect);
 
