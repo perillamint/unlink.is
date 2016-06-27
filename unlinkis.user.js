@@ -104,13 +104,9 @@ function tweet_handler(elem) {
 }
 
 function get_tweets() {
-  var matches = $('li').filter(function() {
-    return this.id.match(/stream-item-tweet-*/);
+  $('.tweet').each(function(i, tweet) {
+    tweet_handler(tweet);
   });
-
-  for (var i = 0; i < matches.length; i++) {
-    tweet_handler(matches[i]);
-  }
 }
 
 var obs_config = {
@@ -128,7 +124,7 @@ var observer = new MutationObserver(function(mutations) {
   });
 });
 
-observer.observe($('#doc')[0], obs_config);
+observer.observe(document.body, obs_config);
 get_tweets();
 
 console.log('Unlink.is ready!');
