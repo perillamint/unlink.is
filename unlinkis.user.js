@@ -4,7 +4,7 @@
 // @include     https://twitter.com/*
 // @include     https://tweetdeck.twitter.com/*
 // @exclude     https://twitter.com/i/*
-// @version     0.2
+// @version     0.3
 // @require     https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js
 // @downloadURL https://raw.githubusercontent.com/perillamint/unlink.is/master/unlinkis.js
 // @updateURL   https://raw.githubusercontent.com/perillamint/unlink.is/master/unlinkis.meta.js
