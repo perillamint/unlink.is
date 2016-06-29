@@ -2,12 +2,17 @@
 // @name        unlink.is
 // @namespace   http://gmscript.gentoo.moe
 // @include     https://twitter.com/*
+// @include     https://tweetdeck.twitter.com/*
+// @exclude     https://twitter.com/i/*
 // @version     0.2
 // @require     https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js
 // @downloadURL https://raw.githubusercontent.com/perillamint/unlink.is/master/unlinkis.js
 // @updateURL   https://raw.githubusercontent.com/perillamint/unlink.is/master/unlinkis.meta.js
 // @grant       GM_xmlhttpRequest
 // @license     GPLv3 or later
+// @connect     t.co
+// @connect     ln.is
+// @connect     linkis.com
 // ==/UserScript==
 
 //Caution: This parsing method is not code-change resist.
@@ -16,11 +21,14 @@ var urlgrabber_regex = /longUrl:[ ]*"(.+?)"/;
 var linkdata_obj_regex = /var LinkData/;
 
 var linkis_detect = /(?:ln\.is|linkis\.com)\/\w+/;
+var linkis_card_detect = /(?:ln\.is|linkis\.com)/;
 var card_iframe_regex = /xdm_default\d+?_provider/;
 
 //Caution: This url extractor WILL CRASH when twitter changes working method of t.co
 var tco_url_extract_regex = /location\.replace\("(.*?)"\)/;
 var tco_url_detect = /http(|s):\/\/t.co\/[^\/]*$/;
+
+var tweetdeck = location.hostname === 'tweetdeck.twitter.com';
 
 function get_jsblock(str) {
   var match = str.match(jsblock_regex);
@@ -65,7 +73,7 @@ function convert_and_patch(url, jqobj, depth) {
       }
       jqobj.attr('href', url);
       // Check `jqobj` is normal link or tweet card
-      if (jqobj.hasClass('twitter-timeline-link')) {
+      if (jqobj.hasClass('twitter-timeline-link') || jqobj.hasClass('url-ext')) {
         jqobj.text(url).attr('title', url);
       } else if (jqobj.hasClass('TwitterCard-container')) {
         jqobj.find('span.SummaryCard-destination').text(jqobj[0].hostname);
@@ -80,11 +88,18 @@ function convert_and_patch(url, jqobj, depth) {
 function tweet_handler(elem) {
   if (elem.tagName == 'IFRAME' && card_iframe_regex.test(elem.id)) {
     $(elem).on('load', function (event) {
-      var link = elem.contentWindow.document.querySelector('a.js-openLink');
-      convert_and_patch(link.href, $(link), 0);
+      var card_hostname = elem.contentWindow.document.querySelector('span.SummaryCard-destination');
+      if (card_hostname !== null && linkis_card_detect.test(card_hostname.textContent)) {
+        var link = elem.contentWindow.document.querySelector('a.js-openLink');
+        convert_and_patch(link.href, $(link), 0);
+      }
     });
   } else {
-    var links = $(elem).find('a.twitter-timeline-link');
+    if (tweetdeck) {
+      var links = $(elem).find('a.url-ext');
+    } else {
+      var links = $(elem).find('a.twitter-timeline-link');
+    }
     for (var i = 0; i < links.length; i++) {
       var match = $(links[i]).text().match(linkis_detect);
 
@@ -96,13 +111,9 @@ function tweet_handler(elem) {
 }
 
 function get_tweets() {
-  var matches = $('li').filter(function() {
-    return this.id.match(/stream-item-tweet-*/);
+  $('.tweet').each(function(i, tweet) {
+    tweet_handler(tweet);
   });
-
-  for (var i = 0; i < matches.length; i++) {
-    tweet_handler(matches[i]);
-  }
 }
 
 var obs_config = {
@@ -120,7 +131,7 @@ var observer = new MutationObserver(function(mutations) {
   });
 });
 
-observer.observe($('#doc')[0], obs_config);
+observer.observe(document.body, obs_config);
 get_tweets();
 
 console.log('Unlink.is ready!');
