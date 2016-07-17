@@ -9,7 +9,7 @@
 // @downloadURL https://raw.githubusercontent.com/perillamint/unlink.is/master/unlinkis.js
 // @updateURL   https://raw.githubusercontent.com/perillamint/unlink.is/master/unlinkis.meta.js
 // @grant       GM_xmlhttpRequest
-// @license     GPLv3 or later
+// @license     MPL-2.0 or later
 // @connect     t.co
 // @connect     ln.is
 // @connect     linkis.com
