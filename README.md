@@ -14,3 +14,7 @@ Add unlinkis.js as Greasemonkey user script.
 # Currently tested platforms
 
 * Firefox Nightly 45.0a1
+
+# Contributors
+
+perillamint, zn
