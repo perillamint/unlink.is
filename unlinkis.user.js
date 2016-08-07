@@ -17,7 +17,7 @@
 
 //Caution: This parsing method is not code-change resist.
 var jsblock_regex = /<script[^>]*>[\s\S]([.\s\S]*?)<\/script>/g;
-var urlgrabber_regex = /longUrl:[ ]*"(.+?)"/;
+var urlgrabber_regex = /longUrl"?:[ ]*"(.+?)"/;
 var linkdata_obj_regex = /var LinkData/;
 
 var linkis_detect = /(?:ln\.is|linkis\.com)\/\w+/;
@@ -43,7 +43,7 @@ function extract_url(str) {
   if (str.match(linkdata_obj_regex) !== null) {
     var match = str.match(urlgrabber_regex);
     if (match !== null) {
-      return match[1];
+      return match[1].replace(/\\\//g, '/');
     }
   }
   return null;
