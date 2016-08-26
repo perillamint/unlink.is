@@ -112,7 +112,14 @@ function tweet_handler(elem) {
       var match = $(links[i]).text().match(linkis_detect);
 
       if (match !== null) {
-        convert_and_patch(links[i].href, $(links[i]), 0);
+        var url = links[i].href;
+        // expanded-url is for Twitter, full-url is for TweetDeck
+        if (links[i].hasAttribute('data-expanded-url')) {
+          url = links[i].getAttribute('data-expanded-url');
+        } else if (links[i].hasAttribute('data-full-url')) {
+          url = links[i].getAttribute('data-full-url');
+        }
+        convert_and_patch(url, $(links[i]), 0);
         var media_url = $(elem).find('a.PlayableMedia-externalUrl');
         if (media_url.length > 0) {
           convert_and_patch(media_url[0].href, media_url, 0);
