@@ -113,6 +113,10 @@ function tweet_handler(elem) {
 
       if (match !== null) {
         convert_and_patch(links[i].href, $(links[i]), 0);
+        var media_url = $(elem).find('a.PlayableMedia-externalUrl');
+        if (media_url.length > 0) {
+          convert_and_patch(media_url[0].href, media_url, 0);
+        }
       }
     }
   }
