@@ -89,9 +89,17 @@ function tweet_handler(elem) {
   if (elem.tagName == 'IFRAME' && card_iframe_regex.test(elem.id)) {
     $(elem).on('load', function (event) {
       var card_hostname = elem.contentWindow.document.querySelector('span.SummaryCard-destination');
-      if (card_hostname !== null && linkis_card_detect.test(card_hostname.textContent)) {
+      if (card_hostname === null) return;
+      if (linkis_card_detect.test(card_hostname.textContent)) {
         var link = elem.contentWindow.document.querySelector('a.js-openLink');
         convert_and_patch(link.href, $(link), 0);
+      } else {
+        var twt_link = $(elem).closest('.tweet').find('a.twitter-timeline-link');
+        var xpurl = twt_link.data('expanded-url');
+        if (linkis_detect.test(xpurl)) {
+          var link = elem.contentWindow.document.querySelector('a.js-openLink');
+          convert_and_patch(link.href, $(link), 0);
+        }
       }
     });
   } else {
